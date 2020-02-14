@@ -1,6 +1,7 @@
 
 #include "fly/fly.h"
 #include "utility.h"
+#include "Tile.h"
 
 int mapSize = 50, tileHeight = 64, current, *heights;
 bool editing, p = true, p2 = true;
@@ -63,26 +64,15 @@ int main(){
   fly::initialize(fly::projectionMethod::ORTHO);
   glfwSetMouseButtonCallback(fly::window, mousePressed);
 
+  Tile tile;
+  tile.initialize();
+ 
   float verticesTile[] = {
     //x,   y, z, s, t
     -64,   0, 0, 0, 0,
       0,  32, 0, 0, 1,
      64,   0, 0, 1, 1,
       0, -32, 0, 1, 0
-  };
-  float verticesTileL[] = {
-
-    -64,   0, 0, 0, 1,
-      0,  32, 0, 1, 1,
-      0, 672, 0, 1, 0,
-    -64, 640, 0, 0, 0
-  };
-  float verticesTileR[] = {
-
-     0,  32, 0, 0, 1,
-    64,   0, 0, 1, 1,
-    64, 640, 0, 0, 0,
-     0, 672, 0, 1, 0
   };
   float verticesBlockL[] = {
 
@@ -98,33 +88,9 @@ int main(){
    (mapSize * tileHeight),                             0, 0, 0, 0,
    (mapSize * tileHeight), -((tileHeight / 2) * mapSize), 0, 0, 1
   };
-  float verticesBorderL[] = {
-
-     -1, -32, 0, 1, 0,
-    -64,   0, 0, 1, 1,
-    -64,  -1, 0, 0, 1,
-     -1, -33, 0, 0, 0
-  };
-  float verticesBorderR[] = {
-
-     1, -32, 0, 1, 0,
-    64,   0, 0, 1, 1,
-    64,  -1, 0, 0, 1,
-     1, -33, 0, 0, 0
-  };
   unsigned int indices[] = { 0, 1, 2, 0, 3, 2 };
 
-  fly::Thing tile, left, right, cursor, blockL, blockR, borderL, borderR;
-  tile.initialize(verticesTile, sizeof(verticesTile), indices, sizeof(indices));
-  tile.setTexture("textures/grass.png");
-  left.initialize(verticesTileL, sizeof(verticesTileL), indices, sizeof(indices));
-  left.setTexture("textures/dirt.png");
-  right.initialize(verticesTileR, sizeof(verticesTileR), indices, sizeof(indices));
-  right.setTexture("textures/dirt2.jpg");
-  borderL.initialize(verticesBorderL, sizeof(verticesBorderL), indices, sizeof(indices));
-  borderL.setTexture("textures/dirt2.jpg");
-  borderR.initialize(verticesBorderR, sizeof(verticesBorderR), indices, sizeof(indices));
-  borderR.setTexture("textures/dirt2.jpg");
+  fly::Thing cursor, blockL, blockR;
 
   cursor.initialize(verticesTile, sizeof(verticesTile), indices, sizeof(indices));
   blockL.initialize(verticesBlockL, sizeof(verticesBlockL), indices, sizeof(indices));
@@ -145,19 +111,13 @@ int main(){
     }
   }
 
-  tile.instance(tilePositions, mapSize * mapSize);
-  left.instance(tilePositions, mapSize * mapSize);
-  right.instance(tilePositions, mapSize * mapSize);
-  borderL.instance(tileBorderPositions, mapSize * mapSize);
-  borderR.instance(tileBorderPositions, mapSize * mapSize);
+  tile.instance(tilePositions, tileBorderPositions, mapSize * mapSize);
 
   for(; fly::running(); fly::update()){
 
+    fly::useTexture(true);
+
     tile.display();
-    left.display();
-    right.display();
-    borderL.display();
-    borderR.display();
 
     if(!editing) calculateCursorPosition();
     else{
@@ -168,13 +128,8 @@ int main(){
       tileBorderPositions[current].y += heights[current];
       clickStart = glm::vec2(fly::mouseX, clickStart.y + heights[current]);
 
-      tile.instance(tilePositions, mapSize * mapSize);
-      left.instance(tilePositions, mapSize * mapSize);
-      right.instance(tilePositions, mapSize * mapSize);
-      borderL.instance(tileBorderPositions, mapSize * mapSize);
-      borderR.instance(tileBorderPositions, mapSize * mapSize);
+      tile.instance(tilePositions, tileBorderPositions, mapSize * mapSize);
     }
-
 
     fly::useTexture(false);
     fly::fill(0, 0, 0, 255);
@@ -190,7 +145,6 @@ int main(){
     blockR.display();
     fly::popMatrix();
 
-    fly::useTexture(true);
     viewport();
   }
 
