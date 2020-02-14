@@ -1,2 +1,2 @@
-# scratch
-2D isometric game prototype
+## dependencies
+* [fly-graphics](https://github.com/flightcoded/fly-graphics)
